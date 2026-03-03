@@ -42,8 +42,8 @@ class PCLTrainer:
         self.out_dir.mkdir(parents=True, exist_ok=True)
         self.wandb = wandb_run
 
-        self.main_labels = "severity_coral" if self.cfg.loss.use_coral_objective else "labels"
-        self.main_obj = "coral" if self.cfg.loss.use_coral_objective else "binary"
+        self.main_labels = 'severity_coral' if self.cfg.loss.use_coral_objective else 'labels'
+        self.main_obj = 'coral' if self.cfg.loss.use_coral_objective else 'binary'
 
         self.accelerator = Accelerator(
             cpu=(not torch.cuda.is_available()),
@@ -54,10 +54,10 @@ class PCLTrainer:
         self.tokeniser = tokeniser
 
         self.train_collator = DataCollatorWithPadding(
-            self.tokeniser, pad_to_multiple_of=8, padding="longest",
+            self.tokeniser, pad_to_multiple_of=8, padding='longest',
         )
         self.eval_collator = DataCollatorWithPadding(
-            self.tokeniser, pad_to_multiple_of=8, padding="longest",
+            self.tokeniser, pad_to_multiple_of=8, padding='longest',
         )
 
         train_loader = self.get_data_loader(
@@ -82,7 +82,7 @@ class PCLTrainer:
         self.eval_loader = eval_loader
         self.scheduler = scheduler
 
-        self.best_value: float = float("-inf") if self.cfg.train.early_stop_higher_is_better else float("inf")
+        self.best_value: float = float('-inf') if self.cfg.train.early_stop_higher_is_better else float('inf')
         self.best_step: int = 0
         self.best_state_cpu: Optional[dict[str, torch.Tensor]] = None
         self._is_better = (
@@ -121,38 +121,38 @@ class PCLTrainer:
             param_groups = split_named_groups_for_wd(named_groups, wd=wd)
             return torch.optim.AdamW(param_groups, weight_decay=0.0, fused=True)
 
-        if optim_name == "adamspd":
+        if optim_name == 'adamspd':
             device = self.accelerator.device
             spd_lambda = self.cfg.optim.adamspd_lambda
 
             named_encoder_params = get_named_encoder_params(model)
             encoder_param_groups = split_named_groups_for_wd(
-                [{"named_params": named_encoder_params, "lr": lr}],
+                [{'named_params': named_encoder_params, 'lr': lr}],
                 wd=spd_lambda,
             )
 
             spd_param_groups = []
             for group in encoder_param_groups:
-                params = group["params"]
-                group_lr = group["lr"]
-                group_wd = group.get("weight_decay", 0.0)
+                params = group['params']
+                group_lr = group['lr']
+                group_wd = group.get('weight_decay', 0.0)
 
                 pre = None
                 if group_wd > 0.0:
                     pre = [p.detach().clone().to(device) for p in params]
                 spd_param_groups.append(
-                    {"params": params, "lr": group_lr, "weight_decay": group_wd, "pre": pre}
+                    {'params': params, 'lr': group_lr, 'weight_decay': group_wd, 'pre': pre}
                 )
 
             head_params = [p for _, p in get_named_head_params(model) if p.requires_grad]
             if head_params:
-                spd_param_groups.append({"params": head_params, "lr": lr, "weight_decay": 0.0, "pre": None})
+                spd_param_groups.append({'params': head_params, 'lr': lr, 'weight_decay': 0.0, 'pre': None})
 
-            print("using adam spd!")
+            print('using adam spd!')
             return AdamSPD(spd_param_groups, lr=lr)
 
         param_groups = split_named_groups_for_wd(
-            [{"named_params": model.named_parameters(), "lr": lr}],
+            [{'named_params': model.named_parameters(), 'lr': lr}],
             wd=wd,
         )
         return torch.optim.AdamW(param_groups, weight_decay=0.0, fused=True)
@@ -191,7 +191,7 @@ class PCLTrainer:
         ):
             targets = targets.float()
             bce = F.binary_cross_entropy_with_logits(
-                logits, targets, pos_weight=weight, reduction="none"
+                logits, targets, pos_weight=weight, reduction='none'
             )
             p = torch.sigmoid(logits)
             p_t = p * targets + (1 - p) * (1 - targets)
@@ -213,7 +213,7 @@ class PCLTrainer:
         if cfg.aux_multilabel_plc_loss_weight > 0:
             aux_pos_weight = None
             if cfg.use_weighted_aux_loss:
-                aux_pos_weight = get_binary_label_weights("type_multilabel").to(self.accelerator.device)
+                aux_pos_weight = get_binary_label_weights('type_multilabel').to(self.accelerator.device)
             aux_loss = nn.BCEWithLogitsLoss(pos_weight=aux_pos_weight)
 
         return main_loss, aux_loss
@@ -257,7 +257,7 @@ class PCLTrainer:
         all_binary_logits = []
         all_binary_labels = []
         for batch in data_loader:
-            logits, aux_logits = self.model(batch["input_ids"], batch["attention_mask"])
+            logits, aux_logits = self.model(batch['input_ids'], batch['attention_mask'])
             all_binary_logits.append(self.get_binary_logits(logits).view(-1))
 
             labels = batch.get('labels', None)
@@ -288,21 +288,21 @@ class PCLTrainer:
 
     def step(self, batch, mode: Literal['train', 'eval']) -> tuple[dict[str, float], torch.Tensor]:
         batch_means = {}
-        logits, aux_logits = self.model(batch["input_ids"], batch["attention_mask"])
+        logits, aux_logits = self.model(batch['input_ids'], batch['attention_mask'])
 
         main_loss = self.main_loss(logits, batch[self.main_labels].view_as(logits))
         total_loss = main_loss
 
-        batch_means[f"{mode}_losses/{self.main_obj}_sev_loss"] = float(main_loss.item())
+        batch_means[f'{mode}_losses/{self.main_obj}_sev_loss'] = float(main_loss.item())
 
         if aux_logits is not None and self.aux_loss is not None:
-            aux_targets = batch["type_multilabel"]
+            aux_targets = batch['type_multilabel']
             aux_loss = self.aux_loss(aux_logits, aux_targets.view_as(aux_logits))
             total_loss = total_loss + aux_loss * self.cfg.loss.aux_multilabel_plc_loss_weight
 
-            batch_means[f"{mode}_losses/aux_ml_loss"] = float(aux_loss.item())
+            batch_means[f'{mode}_losses/aux_ml_loss'] = float(aux_loss.item())
 
-        batch_means[f"{mode}_losses/total_loss"] = float(total_loss.item())
+        batch_means[f'{mode}_losses/total_loss'] = float(total_loss.item())
 
         if mode == 'train':
             self.accelerator.backward(total_loss)
@@ -314,9 +314,9 @@ class PCLTrainer:
             self.optimiser.zero_grad()
             self.scheduler.step()
 
-            lrs = [pg["lr"] for pg in self.optimiser.param_groups]
-            batch_means["train_lr/min"] = float(min(lrs))
-            batch_means["train_lr/max"] = float(max(lrs))
+            lrs = [pg['lr'] for pg in self.optimiser.param_groups]
+            batch_means['train_lr/min'] = float(min(lrs))
+            batch_means['train_lr/max'] = float(max(lrs))
         
         binary_logits = self.get_binary_logits(logits)
         return batch_means, binary_logits
@@ -360,7 +360,7 @@ class PCLTrainer:
         max_batch_steps = cfg.max_steps * cfg.grad_accum
         early_stop = False
 
-        pbar = tqdm(total=cfg.max_steps, desc="train", dynamic_ncols=True)
+        pbar = tqdm(total=cfg.max_steps, desc='train', dynamic_ncols=True)
 
         while (batch_step < max_batch_steps) and (not early_stop):
             for batch in self.train_loader:
@@ -374,7 +374,7 @@ class PCLTrainer:
                         pbar.update(1)
                     
                 train_means, counts = accum_mean(
-                    train_means, counts, train_batch_means, batch["input_ids"].size(0)
+                    train_means, counts, train_batch_means, batch['input_ids'].size(0)
                 )
 
                 if batch_step % (cfg.log_every_steps * cfg.grad_accum) == 0:
@@ -382,7 +382,7 @@ class PCLTrainer:
                     train_means, counts = {}, {}
 
                 if batch_step % (cfg.eval_every_steps * cfg.grad_accum) == 0:
-                    eval_logged, es_metric, _ = self.evaluate(self.eval_loader, mode="eval")
+                    eval_logged, es_metric, _ = self.evaluate(self.eval_loader, mode='eval')
                     self.wandb_log(eval_logged, opt_step)
 
                     early_stop = self.early_stop(es_metric, opt_step)
@@ -398,7 +398,7 @@ class PCLTrainer:
         model_unwrapped = self.accelerator.unwrap_model(self.model)
         model_unwrapped.load_state_dict(self.best_state_cpu, strict=True)
         
-        best_path = self.out_dir / "best_model.pt"
+        best_path = self.out_dir / 'best_model.pt'
         if self.cfg.train.save_best:
             torch.save(self.best_state_cpu, best_path)
             best_model_path = str(best_path)
@@ -407,13 +407,13 @@ class PCLTrainer:
 
         self.wandb_summary(
             {
-                f"best_val_{cfg.early_stop_metric}": float(self.best_value),
-                "best_val_step": int(self.best_step),
+                f'best_val_{cfg.early_stop_metric}': float(self.best_value),
+                'best_val_step': int(self.best_step),
             }
         )
 
         return {
-            "best_model_path": best_model_path,
-            "best_val_metric": self.best_value,
-            "best_val_step": self.best_step,
+            'best_model_path': best_model_path,
+            'best_val_metric': self.best_value,
+            'best_val_step': self.best_step,
         }

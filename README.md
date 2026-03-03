@@ -1,15 +1,22 @@
-extensions:
-- auxiallry losses (multi-class or coral loss: integer plc labels, multi-label loss: integer labels for the plc) 
-- threshold tuning
-- class weighted loss (balanced weighting for the binary cross entropy) done
-- other backbone models other than roberta: deberta-v3, ModernBERT, ELECTRA
-- LLRD (layer-wise learning rate decay) 
-- ADAMSPD (selective projection decay)
-- ensembling models (same backbone different seeds, different backbones)
+# DPM_binary_classification - NLP coursework
 
+## Links for marker
 
-run experiment:
+- **Required prediction files (repo root):**
+  - `dev.txt` — one prediction per line (0/1)
+  - `test.txt` — one prediction per line (0/1)
+- **Best model code + pointers:** `BestModel/README.md`
+  - Contains links to the exact `src/` files/functions implementing each component
+  - Contains the **best-run command**
+  - Contains the **Google Drive link** for the best models weights (multiple models as we ensemble)
 
-```
-python train.py exp@_global_=baseline_roberta_base 
-```
+The full command used for the best run is in:
+- `BestModel/README.md`
+
+## Repository structure
+
+- `BestModel/` — marker entry point
+- `src/` — core implementation (model, trainer, data preparation, LLRD param groups, metrics/utilities)
+- `conf/` — Hydra configs
+- `train.py` — training entry point
+- `environment.yml` — conda env
