@@ -1,0 +1,77 @@
+defaults:
+  - _self_
+  - schema
+  - exp@_global_: none
+
+seed: 0
+verbose: false
+
+cv:
+  enabled: true
+  n_splits: 4
+  shuffle: true
+  ensemble: true
+
+train:
+  train_max_length: 192
+  eval_max_length: 256
+  max_steps: 2000
+  train_bs: 32
+
+  mixed_precision: bf16
+  grad_accum: 1
+  grad_clip_norm: 1.0
+
+  eval_bs: 256
+  log_every_steps: 50
+  eval_every_steps: 100
+  eval_size: 0.25
+
+  early_stop_metric: ap
+  early_stop_higher_is_better: true
+  early_stopping_evals: 4
+
+  prep_prompt: ""
+  save_best: false
+
+optim:
+  optim: adamw
+  adamspd_lambda: 0.0
+
+  lr: 1e-5
+  wd: 0.01
+
+  lldr:
+    enabled: false
+    lr_head: 1e-5
+    lr_top: 1e-5
+    layer_decay: 0.95
+
+  lr_scheduler: linear
+  warmup_ratio: 0.05
+
+loss:
+  use_coral_objective: false
+  use_weighted_loss: false
+  focal_loss_lambda: 0.0
+
+  aux_multilabel_plc_loss_weight: 0.0
+  use_weighted_aux_loss: false
+
+model:
+  encoder_name: roberta-large
+  head_dropout: 0.1
+  use_linear_head: true
+
+wandb:
+  enabled: true
+  project_name: nlp-cw
+  entity: niks_priv
+
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.num}
+

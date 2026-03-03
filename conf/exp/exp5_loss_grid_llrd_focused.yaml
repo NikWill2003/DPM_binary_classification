@@ -1,0 +1,25 @@
+hydra:
+  job:
+    name: loss_llrd_grid_trimB
+  sweeper:
+    params:
+      optim.wd: 0.0,0.01
+      loss.aux_multilabel_plc_loss_weight: 0.25,0.5
+      loss.use_weighted_loss: false,true
+      loss.use_weighted_aux_loss: false,true
+      loss.focal_loss_lambda: 0.0,0.5,1.0
+
+optim:
+  optim: adamw
+  lr: 1e-5
+  lldr:
+    enabled: true
+    lr_head: 1e-5
+    lr_top: 1e-5
+    layer_decay: 0.95
+
+loss:
+  use_coral_objective: true
+
+wandb:
+  tags: [loss_llrd_grid_2]

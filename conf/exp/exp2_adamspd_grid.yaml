@@ -1,0 +1,12 @@
+hydra:
+  job:
+    name: adamspd_lambda_grid
+  sweeper:
+    params:
+      optim.adamspd_lambda: 0.2,0.5,1,1.4,
+
+optim:
+  optim: adamspd
+
+wandb:
+  tags: [adam_spd_grid]

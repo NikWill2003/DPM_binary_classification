@@ -1,0 +1,9 @@
+hydra:
+  job:
+    name: baseline_roberta_base
+
+model:
+  encoder_name: roberta-base
+
+wandb:
+  tags: [roberta_base_baseline]

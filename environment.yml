@@ -1,0 +1,33 @@
+name: nlp-cw
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  - jupyterlab
+  - ipykernel
+  - plotly
+  - matplotlib
+
+  - pip:
+
+      - --extra-index-url https://download.pytorch.org/whl/cu130
+      - torch
+      - torchvision
+      - torchaudio
+      - transformers
+      - datasets
+      - tokenizers
+      - accelerate
+      - evaluate
+      - huggingface_hub
+      - wandb
+      - safetensors
+      - sentencepiece
+      - wordcloud
