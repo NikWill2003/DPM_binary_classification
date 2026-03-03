@@ -1,10 +1,10 @@
 # DPM_binary_classification - NLP coursework
 
-## Links for marker
+## Info for markers
 
-- **Required prediction files (repo root):**
-  - `dev.txt` — one prediction per line (0/1)
-  - `test.txt` — one prediction per line (0/1)
+- **Required prediction files:**
+  - `dev.txt` — in root
+  - `test.txt` — in root
 - **Best model code + pointers:** `BestModel/README.md`
   - Contains links to the exact `src/` files/functions implementing each component
   - Contains the **best-run command**
