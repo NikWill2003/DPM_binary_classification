@@ -18,7 +18,7 @@ Weights are provided via Google Drive: https://drive.google.com/drive/folders/1m
   https://github.com/NikWill2003/DPM_binary_classification/blob/main/src/prepare_dataset.py#L133-L213
 
 - **Metrics + writing predictions:**  
-  https://github.com/NikWill2003/DPM_binary_classification/blob/main/src/utils.py#L114-L178
+  https://github.com/NikWill2003/DPM_binary_classification/blob/main/src/utils.py#L114-L177
 
 ---
 
