@@ -4,6 +4,8 @@ This folder points to the implementation of the best-performing model described 
 
 Weights are provided via Google Drive: https://drive.google.com/drive/folders/1md0LZDrtph17YcO5gDjTFDpL4Un3j-HX?usp=sharing. Predictions in `dev.txt` and `test.txt` at the repo root.
 
+[![W&B Run](https://img.shields.io/badge/W%26B-run-blue)](https://wandb.ai/niks_priv/nlp-cw-best-model/table?nw=nwusernikiwillems9)
+
 ---
 
 ## Main components

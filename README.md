@@ -20,3 +20,7 @@ The full command used for the best run is in:
 - `conf/` — Hydra configs
 - `train.py` — training entry point
 - `environment.yml` — conda env
+
+
+
+[![W&B Run](https://img.shields.io/badge/W%26B-run-blue)](https://wandb.ai/niks_priv/nlp-cw-best-model/table?nw=nwusernikiwillems9)
